@@ -13,31 +13,33 @@ if (!defined('_PS_VERSION_')) {
 
 class IDPay extends PaymentModule
 {
+
+
     private $_html = '';
     private $_postErrors = array();
 
     public $address;
 
     /**
-     * PrestaPay constructor.
+     * IDPay constructor.
      *
      * Set the information about this module
      */
     public function __construct()
     {
-        $this->name                   = 'idpay';
-        $this->tab                    = 'payments_gateways';
-        $this->version                = '1.0';
-        $this->author                 = 'IDPay';
-        $this->controllers            = array('payment', 'validation');
-        $this->currencies             = true;
-        $this->currencies_mode        = 'checkbox';
-        $this->bootstrap              = true;
-        $this->displayName            = 'IDPay';
-        $this->description            = 'پرداخت امن با آدی پی';
-        $this->confirmUninstall       = 'Are you sure you want to uninstall this module?';
+        $this->name = 'idpay';
+        $this->tab = 'payments_gateways';
+        $this->version = '1.0';
+        $this->author = 'IDPay';
+        $this->controllers = array('payment', 'validation');
+        $this->currencies = true;
+        $this->currencies_mode = 'checkbox';
+        $this->bootstrap = true;
+        $this->displayName = 'IDPay';
+        $this->description = 'پرداخت امن با آدی پی';
+        $this->confirmUninstall = 'Are you sure you want to uninstall this module?';
         $this->ps_versions_compliancy = array('min' => '1.7.0', 'max' => _PS_VERSION_);
-        $this->bootstrap=true;
+        $this->bootstrap = true;
         parent::__construct();
     }
 
@@ -48,12 +50,9 @@ class IDPay extends PaymentModule
      */
     public function install()
     {
-      
-      $sql='ALTER table `'._DB_PREFIX_.'cart` ADD idpay_id VARCHAR(100)';
-      Db::getInstance()->Execute($sql);
-      return parent::install()
-                 && $this->registerHook('paymentOptions')
-                 && $this->registerHook('paymentReturn');
+        return parent::install()
+            && $this->registerHook('paymentOptions')
+            && $this->registerHook('paymentReturn');
     }
 
     /**
@@ -90,6 +89,9 @@ class IDPay extends PaymentModule
     }
 
 
+    /**
+     * generate setting form for admin
+     */
     private function _generateForm()
     {
         $this->_html .= '<div align="center"><form action="' . $_SERVER['REQUEST_URI'] . '" method="post">';
@@ -111,58 +113,58 @@ class IDPay extends PaymentModule
 
 
     /**
-       * Display this module as a payment option during the checkout
-       *
-       * @param array $params
-       * @return array|void
-       */
-      public function hookPaymentOptions($params)
-      {
-          /*
-           * Verify if this module is active
-           */
-          if (!$this->active) {
-              return;
-          }
+     * Display this module as a payment option during the checkout
+     *
+     * @param array $params
+     * @return array|void
+     */
+    public function hookPaymentOptions($params)
+    {
+        /*
+         * Verify if this module is active
+         */
+        if (!$this->active) {
+            return;
+        }
 
 
-          /**
-           * Form action URL. The form data will be sent to the
-           * validation controller when the user finishes
-           * the order process.
-           */
-          $formAction = $this->context->link->getModuleLink($this->name, 'validation', array(), true);
+        /**
+         * Form action URL. The form data will be sent to the
+         * validation controller when the user finishes
+         * the order process.
+         */
+        $formAction = $this->context->link->getModuleLink($this->name, 'validation', array(), true);
 
-          /**
-           * Assign the url form action to the template var $action
-           */
-          $this->smarty->assign(['action' => $formAction]);
+        /**
+         * Assign the url form action to the template var $action
+         */
+        $this->smarty->assign(['action' => $formAction]);
 
-          /**
-           *  Load form template to be displayed in the checkout step
-           */
-          $paymentForm = $this->fetch('module:idpay/views/templates/hook/payment_options.tpl');
+        /**
+         *  Load form template to be displayed in the checkout step
+         */
+        $paymentForm = $this->fetch('module:idpay/views/templates/hook/payment_options.tpl');
 
-          /**
-           * Create a PaymentOption object containing the necessary data
-           * to display this module in the checkout
-           */
-          $displayName=' پرداخت امن با آیدی پی';
-          $newOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption;
-          $newOption->setModuleName($this->displayName)
-              ->setCallToActionText($displayName)
-              ->setAction($formAction)
-              ->setForm($paymentForm);
+        /**
+         * Create a PaymentOption object containing the necessary data
+         * to display this module in the checkout
+         */
+        $displayName = ' پرداخت امن با آیدی پی';
+        $newOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption;
+        $newOption->setModuleName($this->displayName)
+            ->setCallToActionText($displayName)
+            ->setAction($formAction)
+            ->setForm($paymentForm);
 
-          $payment_options = array(
-              $newOption
-          );
+        $payment_options = array(
+            $newOption
+        );
 
-          return $payment_options;
-      }
+        return $payment_options;
+    }
 
 
-      /**
+    /**
      * Display a message in the paymentReturn hook
      *
      * @param array $params
@@ -177,8 +179,17 @@ class IDPay extends PaymentModule
             return;
         }
 
-
         return $this->fetch('module:idpay/views/templates/hook/payment_return.tpl');
+    }
+
+
+    public function hash_key()
+    {
+        $en = array('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z');
+        $one = rand(1, 26);
+        $two = rand(1, 26);
+        $three = rand(1, 26);
+        return $hash = $en[$one] . rand(0, 9) . rand(0, 9) . $en[$two] . $en[$three] . rand(0, 9) . rand(10, 99);
     }
 
 
